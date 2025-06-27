@@ -52,4 +52,21 @@ export class UserSession {
   public getRefreshToken(): Token { return this.refreshToken; }
   public getExpiresAt(): Date { return this.expiresAt; }
   public getIsActive(): boolean { return this.isActive; }
+  public getDeviceInfo(): any { return this.deviceInfo; }
+  public getIpAddress(): string { return this.ipAddress; }
+  public getCreatedAt(): Date { return this.createdAt; }
+  public getSessionData(): any {
+    return {
+      id: this.id,
+      userId: this.userId.value,
+      accessToken: this.accessToken.value,
+      refreshToken: this.refreshToken.value,
+      deviceInfo: this.deviceInfo,
+      ipAddress: this.ipAddress,
+      expiresAt: this.expiresAt,
+      isActive: this.isActive,
+      createdAt: this.createdAt
+    };
+  }
+
 }

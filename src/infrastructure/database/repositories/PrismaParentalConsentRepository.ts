@@ -4,9 +4,13 @@ import { ParentalConsent } from '../../../domain/entities/ParentalConsent';
 import { UserId } from '../../../domain/value-objects/UserId';
 import { Email } from '../../../domain/value-objects/Email';
 import { Token } from '../../../domain/value-objects/Token';
+import { injectable, inject } from 'inversify';
 
+@injectable()
 export class PrismaParentalConsentRepository implements IParentalConsentRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    @inject('PrismaClient') private readonly prisma: PrismaClient
+  ) {}
 
   async save(consent: ParentalConsent): Promise<void> {
     await this.prisma.parentalConsent.upsert({
@@ -36,7 +40,6 @@ export class PrismaParentalConsentRepository implements IParentalConsentReposito
     });
 
     if (!record) return null;
-
     return this.toDomain(record);
   }
 
@@ -50,7 +53,6 @@ export class PrismaParentalConsentRepository implements IParentalConsentReposito
     });
 
     if (!record) return null;
-
     return this.toDomain(record);
   }
 
@@ -63,7 +65,6 @@ export class PrismaParentalConsentRepository implements IParentalConsentReposito
     });
 
     if (!record) return null;
-
     return this.toDomain(record);
   }
 

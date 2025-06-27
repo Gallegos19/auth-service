@@ -3,9 +3,13 @@ import { IUserSessionRepository } from '../../../domain/repositories/IUserSessio
 import { UserSession } from '../../../domain/entities/UserSession';
 import { UserId } from '../../../domain/value-objects/UserId';
 import { Token } from '../../../domain/value-objects/Token';
+import { injectable, inject } from 'inversify';
 
+@injectable()
 export class PrismaUserSessionRepository implements IUserSessionRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(
+    @inject('PrismaClient') private readonly prisma: PrismaClient
+  ) {}
 
   async save(session: UserSession): Promise<void> {
     await this.prisma.userSession.upsert({
@@ -17,8 +21,8 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
       create: {
         id: session.getId(),
         user_id: session.getUserId().value,
-        token_hash: session.getAccessToken().value, // En producción, hashear el token
-        device_info: session.getDeviceInfo(),
+        token_hash: this.hashToken(session.getAccessToken().value),
+        device_info: session.getDeviceInfo() || {},
         ip_address: session.getIpAddress(),
         is_active: session.getIsActive(),
         started_at: session.getCreatedAt()
@@ -27,22 +31,36 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
   }
 
   async findByAccessToken(token: Token): Promise<UserSession | null> {
+    const tokenHash = this.hashToken(token.value);
     const sessionRecord = await this.prisma.userSession.findFirst({
       where: { 
-        token_hash: token.value, // En producción, comparar hash
+        token_hash: tokenHash,
         is_active: true
       }
     });
 
     if (!sessionRecord) return null;
-
-    return this.toDomain(sessionRecord);
+    return this.toDomain(sessionRecord, token);
   }
 
   async findByRefreshToken(token: Token): Promise<UserSession | null> {
-    // Implementar lógica similar para refresh token
-    // Por simplicidad, asumimos que almacenamos ambos tokens
+    // En un escenario real, también almacenarías el refresh token hash
+    // Por simplicidad, implementamos búsqueda básica
+    // Esto requiere modificar el schema para incluir refresh_token_hash
     return null; // Implementar según diseño específico
+  }
+
+  async findActiveSessions(userId: UserId): Promise<UserSession[]> {
+    const sessions = await this.prisma.userSession.findMany({
+      where: { 
+        user_id: userId.value,
+        is_active: true
+      },
+      orderBy: { started_at: 'desc' }
+    });
+
+
+    return sessions.map((session: UserSession) => this.toDomain(session));
   }
 
   async invalidateUserSessions(userId: UserId): Promise<void> {
@@ -56,28 +74,56 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
     });
   }
 
-  async findActiveSessions(userId: UserId): Promise<UserSession[]> {
-    const sessions = await this.prisma.userSession.findMany({
+  async invalidateSession(sessionId: string): Promise<void> {
+    await this.prisma.userSession.update({
+      where: { id: sessionId },
+      data: { 
+        is_active: false,
+        ended_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+  }
+
+  async deleteExpiredSessions(): Promise<void> {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    await this.prisma.userSession.deleteMany({
+      where: {
+        OR: [
+          { started_at: { lt: thirtyDaysAgo } },
+          { is_active: false, ended_at: { lt: thirtyDaysAgo } }
+        ]
+      }
+    });
+  }
+
+  async countActiveSessions(userId: UserId): Promise<number> {
+    return this.prisma.userSession.count({
       where: { 
         user_id: userId.value,
         is_active: true
       }
     });
-
-    return sessions.map(session => this.toDomain(session));
   }
 
-  private toDomain(record: any): UserSession {
+  private toDomain(record: any, accessToken?: Token): UserSession {
     return new UserSession(
       record.id,
       new UserId(record.user_id),
-      new Token(record.token_hash),
+      accessToken || new Token(''), // El token real no se almacena, solo su hash
       new Token(''), // refresh token - implementar según diseño
       record.device_info,
       record.ip_address || '',
       record.started_at,
       record.is_active,
-      record.created_at || record.started_at
+      record.started_at
     );
+  }
+
+  private hashToken(token: string): string {
+    // En producción, usar un hash seguro (SHA-256)
+    const crypto = require('crypto');
+    return crypto.createHash('sha256').update(token).digest('hex');
   }
 }

@@ -83,4 +83,8 @@ export class User {
   public getIsVerified(): boolean { return this.isVerified; }
   public getAccountStatus(): AccountStatus { return this.accountStatus; }
   public getCreatedAt(): Date { return this.createdAt; }
+  public getPasswordHash(): Password { return this.hashedPassword; }
+  public setPasswordHash(password: Password): void {
+    this.hashedPassword = password;
+  }
 }
