@@ -54,21 +54,52 @@ export function createAuthRoutes(
    *     description: Gestión de consentimiento parental para usuarios menores de 13 años
    */
 
-  router.post('/register', 
+    router.post('/register', 
     rateLimitMiddleware(5, 15), // 5 intentos por 15 minutos
-    validationMiddleware(RegisterSchema),
-    authController.register.bind(authController)
+    async (req, res) => {
+      try {
+        await authController.register(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /register:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error',
+          details: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
   );
 
   router.post('/login',
     rateLimitMiddleware(10, 15), // 10 intentos por 15 minutos
-    validationMiddleware(LoginSchema),
-    authController.login.bind(authController)
+    async (req, res) => {
+      try {
+        await authController.login(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /login:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error',
+          details: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
   );
 
   router.post('/logout',
     authMiddleware, // Requiere token válido
-    authController.logout.bind(authController)
+    async (req, res) => {
+      try {
+        await authController.logout(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /logout:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error',
+          details: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
   );
 
   // =================
@@ -78,17 +109,47 @@ export function createAuthRoutes(
   // CRÍTICO: Endpoint para API Gateway - alta frecuencia
   router.post('/validate-token',
     rateLimitMiddleware(1000, 1), // 1000 requests por minuto
-    tokenController.validateToken.bind(tokenController)
+    async (req, res) => {
+      try {
+        await tokenController.validateToken(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /validate-token:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
   );
 
   router.post('/refresh-token',
     rateLimitMiddleware(20, 15), // 20 refresh por 15 minutos
-    tokenController.refreshToken.bind(tokenController)
+    async (req, res) => {
+      try {
+        await tokenController.refreshToken(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /refresh-token:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
   );
 
   router.post('/revoke-token',
     authMiddleware,
-    tokenController.revokeToken.bind(tokenController)
+    async (req, res) => {
+      try {
+        await tokenController.revokeToken(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /revoke-token:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
   );
 
   // =============================

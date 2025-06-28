@@ -97,7 +97,6 @@ constructor(
   async register(req: Request, res: Response): Promise<void> {
     try {
       const dto = RegisterUserDto.fromRequest(req.body);
-      
       const result = await this.authCommandPort.registerUser({
         email: dto.email,
         password: dto.password,
@@ -106,7 +105,7 @@ constructor(
         firstName: dto.firstName,
         lastName: dto.lastName
       });
-
+      console.log('User registration result:', result);
       res.status(201).json({
         success: true,
         data: result,
