@@ -1,11 +1,11 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("USER_DB_URL")
+  provider  = "postgresql"
+  url       = env("USER_DB_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -42,12 +42,16 @@ model User {
   device_tokens   DeviceToken[]
 
   @@map("users")
+  @@index([email])
+  @@index([account_status])
+  @@index([created_at])
 }
 
 model UserSession {
   id                String    @id @default(uuid())
   user_id           String
-  token_hash        String
+  token_hash        String    @unique
+  refresh_token_hash String?  @unique
   device_info       Json      @default("{}")
   ip_address        String?
   user_agent        String?
@@ -57,6 +61,7 @@ model UserSession {
   actions_count     Int       @default(0)
   started_at        DateTime  @default(now())
   ended_at          DateTime?
+  expires_at        DateTime
   is_active         Boolean   @default(true)
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
@@ -65,6 +70,10 @@ model UserSession {
   user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("user_sessions")
+  @@index([user_id])
+  @@index([token_hash])
+  @@index([is_active])
+  @@index([expires_at])
 }
 
 model ParentalConsent {
@@ -86,6 +95,10 @@ model ParentalConsent {
   minor_user      User      @relation(fields: [minor_user_id], references: [id], onDelete: Cascade)
 
   @@map("parental_consents")
+  @@index([minor_user_id])
+  @@index([consent_token])
+  @@index([is_approved])
+  @@index([expires_at])
 }
 
 model PasswordReset {
@@ -94,12 +107,16 @@ model PasswordReset {
   token       String    @unique
   expires_at  DateTime
   is_used     Boolean   @default(false)
+  used_at     DateTime?
   created_at  DateTime  @default(now())
 
   // Relación
   user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("password_resets")
+  @@index([user_id])
+  @@index([token])
+  @@index([expires_at])
 }
 
 model OAuthAccount {
@@ -117,6 +134,8 @@ model OAuthAccount {
 
   @@unique([provider, provider_user_id])
   @@map("oauth_accounts")
+  @@index([user_id])
+  @@index([provider])
 }
 
 model DeviceToken {
@@ -136,4 +155,7 @@ model DeviceToken {
   user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("device_tokens")
+  @@index([user_id])
+  @@index([token])
+  @@index([is_active])
 }

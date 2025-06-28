@@ -45,6 +45,20 @@ export class UserSession {
     return this.isActive && !this.isExpired();
   }
 
+  public updateTokens(newAccessToken: Token, newRefreshToken: Token): UserSession {
+  return new UserSession(
+    this.id,
+    this.userId,
+    newAccessToken,
+    newRefreshToken,
+    this.deviceInfo,
+    this.ipAddress,
+    this.expiresAt,
+    this.isActive,
+    this.createdAt
+  );
+}
+
   // Getters
   public getId(): string { return this.id; }
   public getUserId(): UserId { return this.userId; }

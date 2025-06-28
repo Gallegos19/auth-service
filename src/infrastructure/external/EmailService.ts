@@ -1,4 +1,4 @@
-import { EmailServicePort } from '../../application/ports/output/EmailServicePort';
+import { EmailServicePort } from "../../application/ports/ouput/EmailServicePort";
 
 export class EmailService implements EmailServicePort {
   constructor(

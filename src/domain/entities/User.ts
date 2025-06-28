@@ -74,6 +74,14 @@ export class User {
     return this.isVerified && this.accountStatus === 'active';
   }
 
+  public getHashedPassword(): string { 
+  return this.hashedPassword.value; 
+  }
+
+  public updatePassword(newPassword: Password): void {
+    this.hashedPassword = newPassword;
+  }
+
   // Getters
   public getId(): UserId { return this.id; }
   public getEmail(): Email { return this.email; }

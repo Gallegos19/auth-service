@@ -1,10 +1,11 @@
+import { injectable, inject } from 'inversify';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { PasswordServicePort } from '../ports/output/PasswordServicePort';
-import { EventPublisherPort } from '../ports/output/EventPublisherPort';
 import { Email } from '../../domain/value-objects/Email';
 import { Password } from '../../domain/value-objects/Password';
 import { Age } from '../../domain/value-objects/Age';
 import { User } from '../../domain/entities/User';
+import { PasswordServicePort } from '../ports/ouput/PasswordServicePort';
+import { EventPublisherPort } from '../ports/ouput/EventPublisherPort';
 
 export interface RegisterUserCommand {
   email: string;
@@ -22,11 +23,12 @@ export interface RegisterUserResponse {
   accountStatus: string;
 }
 
+@injectable()
 export class RegisterUserUseCase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly passwordService: PasswordServicePort,
-    private readonly eventPublisher: EventPublisherPort
+    @inject('IUserRepository') private readonly userRepository: IUserRepository,
+    @inject('PasswordServicePort') private readonly passwordService: PasswordServicePort,
+    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserResponse> {

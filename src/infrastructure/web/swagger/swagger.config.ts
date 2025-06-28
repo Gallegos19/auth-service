@@ -20,11 +20,11 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/api',
+        url: 'http://localhost:3000/',
         description: 'Servidor de desarrollo'
       },
       {
-        url: 'https://api.xumaa.app/auth',
+        url: 'https://api.xumaa.app/auth/',
         description: 'Servidor de producción'
       }
     ],

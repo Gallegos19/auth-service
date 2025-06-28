@@ -7,18 +7,17 @@ import { ValidateTokenUseCase, ValidateTokenCommand, ValidateTokenResponse } fro
 import { RefreshTokenUseCase, RefreshTokenCommand, RefreshTokenResponse } from '../use-cases/RefreshTokenUseCase';
 import { RequestParentalConsentUseCase } from '../use-cases/RequestParentalConsentUseCase';
 import { ForgotPasswordUseCase } from '../use-cases/ForgotPasswordUseCase';
-
+import {inject} from 'inversify';
 export class AuthApplicationService implements AuthCommandPort, AuthQueryPort {
-  constructor(
-    private readonly registerUserUseCase: RegisterUserUseCase,
-    private readonly loginUserUseCase: LoginUserUseCase,
-    private readonly logoutUserUseCase: LogoutUserUseCase,
-    private readonly validateTokenUseCase: ValidateTokenUseCase,
-    private readonly refreshTokenUseCase: RefreshTokenUseCase,
-    private readonly requestParentalConsentUseCase: RequestParentalConsentUseCase,
-    private readonly forgotPasswordUseCase: ForgotPasswordUseCase
+ constructor(
+    @inject('RegisterUserUseCase') private readonly registerUserUseCase: RegisterUserUseCase,
+    @inject('LoginUserUseCase') private readonly loginUserUseCase: LoginUserUseCase,
+    @inject('LogoutUserUseCase') private readonly logoutUserUseCase: LogoutUserUseCase,
+    @inject('ValidateTokenUseCase') private readonly validateTokenUseCase: ValidateTokenUseCase,
+    @inject('RefreshTokenUseCase') private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    @inject('RequestParentalConsentUseCase') private readonly requestParentalConsentUseCase: RequestParentalConsentUseCase,
+    @inject('ForgotPasswordUseCase') private readonly forgotPasswordUseCase: ForgotPasswordUseCase
   ) {}
-
   // Command Methods
   async registerUser(command: RegisterUserCommand): Promise<RegisterUserResponse> {
     return this.registerUserUseCase.execute(command);

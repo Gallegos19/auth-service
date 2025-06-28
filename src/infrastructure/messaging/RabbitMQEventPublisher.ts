@@ -1,5 +1,5 @@
-import { EventPublisherPort, DomainEvent } from '../../application/ports/output/EventPublisherPort';
 import amqp from 'amqplib';
+import { DomainEvent, EventPublisherPort } from '../../application/ports/ouput/EventPublisherPort';
 
 export class RabbitMQEventPublisher implements EventPublisherPort {
   private connection?: amqp.Connection;
@@ -12,7 +12,11 @@ export class RabbitMQEventPublisher implements EventPublisherPort {
     this.channel = await this.connection.createChannel();
     
     // Declarar exchange para eventos de dominio
-    await this.channel.assertExchange('domain.events', 'topic', { durable: true });
+    if (this.channel) {
+      await this.channel.assertExchange('domain.events', 'topic', { durable: true });
+    } else {
+      throw new Error('Failed to create channel for RabbitMQ');
+    }
   }
 
   async publish(event: DomainEvent): Promise<void> {
@@ -45,7 +49,11 @@ export class RabbitMQEventPublisher implements EventPublisherPort {
   }
 
   async close(): Promise<void> {
-    await this.channel?.close();
-    await this.connection?.close();
+    if (this.channel) {
+      await this.channel.close();
+    }
+    if (this.connection) {
+      await (this.connection as any).close();
+    }
   }
 }

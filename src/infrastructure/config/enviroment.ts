@@ -29,6 +29,14 @@ export const config = {
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100')
   },
 
+   oauth: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      redirectUri: process.env.GOOGLE_REDIRECT_URI || ''
+    }
+  },
+
   // External Services
   rabbitmq: {
     url: process.env.RABBITMQ_URL || 'amqp://localhost:5672'

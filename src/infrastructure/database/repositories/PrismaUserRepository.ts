@@ -27,7 +27,7 @@ export class PrismaUserRepository implements IUserRepository {
       create: {
         id: user.getId().value,
         email: user.getEmail().value,
-        password_hash: user.getPasswordHash(),
+        password_hash: user.getHashedPassword(), 
         first_name: user.getFirstName(),
         last_name: user.getLastName(),
         age: user.getAge().value,
@@ -97,7 +97,6 @@ export class PrismaUserRepository implements IUserRepository {
       orderBy: { created_at: 'desc' }
     });
 
-
     return users.map((user: User) => this.toDomain(user));
   }
 
@@ -105,7 +104,7 @@ export class PrismaUserRepository implements IUserRepository {
     return new User(
       new UserId(record.id),
       new Email(record.email),
-      new Password(record.password_hash),
+      new Password(record.password_hash), 
       new Age(record.age),
       record.first_name,
       record.last_name,

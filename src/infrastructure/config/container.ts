@@ -40,6 +40,9 @@ import { AuthCommandPort } from '../../application/ports/input/AuthCommandPort';
 import { AuthQueryPort } from '../../application/ports/input/AuthQueryPort';
 import { EmailServicePort } from '../../application/ports/ouput/EmailServicePort';
 import { EventPublisherPort } from '../../application/ports/ouput/EventPublisherPort';
+import { PrismaPasswordResetRepository } from '../database/repositories/PrismaPasswordResetRepository';
+import { IPasswordResetRepository } from '../../domain/repositories/IPasswordResetRepository';
+
 
 // Configuration
 import { config } from './enviroment';
@@ -68,7 +71,7 @@ container.bind<EventPublisherPort>('EventPublisherPort').to(RabbitMQEventPublish
 container.bind<IUserRepository>('IUserRepository').to(PrismaUserRepository);
 container.bind<IUserSessionRepository>('IUserSessionRepository').to(PrismaUserSessionRepository);
 container.bind<IParentalConsentRepository>('IParentalConsentRepository').to(PrismaParentalConsentRepository);
-
+container.bind<IPasswordResetRepository>('IPasswordResetRepository').to(PrismaPasswordResetRepository);
 // ==================
 // USE CASES
 // ==================

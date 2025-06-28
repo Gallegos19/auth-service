@@ -1,4 +1,11 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request } from "express";
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    role: string;
+    [key: string]: any;
+  };
+}
 
 export const roleMiddleware = (allowedRoles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
