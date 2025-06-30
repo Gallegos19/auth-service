@@ -2,7 +2,7 @@ import { EmailServicePort } from "../../application/ports/ouput/EmailServicePort
 
 export class EmailService implements EmailServicePort {
   constructor(
-    private readonly emailProvider: any, // Implementación específica (SendGrid, AWS SES, etc.)
+    private readonly emailProvider: any, 
     private readonly frontendUrl: string
   ) {}
 

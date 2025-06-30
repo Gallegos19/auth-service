@@ -1,14 +1,17 @@
+// src/application/use-cases/LogoutUserUseCase.ts
 import { IUserSessionRepository } from '../../domain/repositories/IUserSessionRepository';
 import { Token } from '../../domain/value-objects/Token';
+import { injectable, inject } from 'inversify';
 
 export interface LogoutUserCommand {
   accessToken: string;
   logoutFromAllDevices?: boolean;
 }
 
+@injectable()
 export class LogoutUserUseCase {
   constructor(
-    private readonly sessionRepository: IUserSessionRepository
+    @inject('IUserSessionRepository') private readonly sessionRepository: IUserSessionRepository
   ) {}
 
   async execute(command: LogoutUserCommand): Promise<void> {

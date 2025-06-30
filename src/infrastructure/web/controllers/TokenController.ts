@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { AuthQueryPort } from '../../../application/ports/input/AuthQueryPort';
 import { AuthCommandPort } from '../../../application/ports/input/AuthCommandPort';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class TokenController {
   constructor(
-    private readonly authQueryPort: AuthQueryPort,
-    private readonly authCommandPort: AuthCommandPort
+    @inject('AuthQueryPort') private readonly authQueryPort: AuthQueryPort,
+    @inject('AuthCommandPort') private readonly authCommandPort: AuthCommandPort
   ) {}
 
   /**

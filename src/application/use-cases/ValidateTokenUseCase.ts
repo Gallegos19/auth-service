@@ -1,6 +1,7 @@
 import { IUserSessionRepository } from '../../domain/repositories/IUserSessionRepository';
-import { TokenServicePort } from '../ports/output/TokenServicePort';
+import { TokenServicePort } from '../ports/ouput/TokenServicePort';
 import { Token } from '../../domain/value-objects/Token';
+import { injectable, inject } from 'inversify';
 
 export interface ValidateTokenCommand {
   accessToken: string;
@@ -15,10 +16,11 @@ export interface ValidateTokenResponse {
   error?: string;
 }
 
+@injectable()
 export class ValidateTokenUseCase {
   constructor(
-    private readonly sessionRepository: IUserSessionRepository,
-    private readonly tokenService: TokenServicePort
+    @inject('IUserSessionRepository') private readonly sessionRepository: IUserSessionRepository,
+    @inject('TokenServicePort') private readonly tokenService: TokenServicePort
   ) {}
 
   async execute(command: ValidateTokenCommand): Promise<ValidateTokenResponse> {

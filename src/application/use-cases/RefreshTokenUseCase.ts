@@ -1,3 +1,9 @@
+// src/application/use-cases/RefreshTokenUseCase.ts
+import { IUserSessionRepository } from '../../domain/repositories/IUserSessionRepository';
+import { TokenServicePort } from '../ports/ouput/TokenServicePort';
+import { Token } from '../../domain/value-objects/Token';
+import { injectable, inject } from 'inversify';
+
 export interface RefreshTokenCommand {
   refreshToken: string;
 }
@@ -8,10 +14,11 @@ export interface RefreshTokenResponse {
   expiresIn: number;
 }
 
+@injectable()
 export class RefreshTokenUseCase {
   constructor(
-    private readonly sessionRepository: IUserSessionRepository,
-    private readonly tokenService: TokenServicePort
+    @inject('IUserSessionRepository') private readonly sessionRepository: IUserSessionRepository,
+    @inject('TokenServicePort') private readonly tokenService: TokenServicePort
   ) {}
 
   async execute(command: RefreshTokenCommand): Promise<RefreshTokenResponse> {

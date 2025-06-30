@@ -1,3 +1,4 @@
+// src/infrastructure/database/repositories/PrismaUserSessionRepository.ts
 import { PrismaClient } from '@prisma/client';
 import { IUserSessionRepository } from '../../../domain/repositories/IUserSessionRepository';
 import { UserSession } from '../../../domain/entities/UserSession';
@@ -22,8 +23,10 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
         id: session.getId(),
         user_id: session.getUserId().value,
         token_hash: this.hashToken(session.getAccessToken().value),
+        refresh_token_hash: this.hashToken(session.getRefreshToken().value),
         device_info: session.getDeviceInfo() || {},
         ip_address: session.getIpAddress(),
+        expires_at: session.getExpiresAt(),
         is_active: session.getIsActive(),
         started_at: session.getCreatedAt()
       }
@@ -44,10 +47,16 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
   }
 
   async findByRefreshToken(token: Token): Promise<UserSession | null> {
-    // En un escenario real, también almacenarías el refresh token hash
-    // Por simplicidad, implementamos búsqueda básica
-    // Esto requiere modificar el schema para incluir refresh_token_hash
-    return null; // Implementar según diseño específico
+    const tokenHash = this.hashToken(token.value);
+    const sessionRecord = await this.prisma.userSession.findFirst({
+      where: { 
+        refresh_token_hash: tokenHash,
+        is_active: true
+      }
+    });
+
+    if (!sessionRecord) return null;
+    return this.toDomain(sessionRecord, undefined, token);
   }
 
   async findActiveSessions(userId: UserId): Promise<UserSession[]> {
@@ -59,8 +68,7 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
       orderBy: { started_at: 'desc' }
     });
 
-
-    return sessions.map((session: UserSession) => this.toDomain(session));
+    return sessions.map((session: any) => this.toDomain(session));
   }
 
   async invalidateUserSessions(userId: UserId): Promise<void> {
@@ -107,15 +115,15 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
     });
   }
 
-  private toDomain(record: any, accessToken?: Token): UserSession {
+  private toDomain(record: any, accessToken?: Token, refreshToken?: Token): UserSession {
     return new UserSession(
       record.id,
       new UserId(record.user_id),
-      accessToken || new Token(''), // El token real no se almacena, solo su hash
-      new Token(''), // refresh token - implementar según diseño
+      accessToken || new Token('mock-access-token'), // En producción, no almacenamos el token real
+      refreshToken || new Token('mock-refresh-token'), // En producción, no almacenamos el token real
       record.device_info,
       record.ip_address || '',
-      record.started_at,
+      record.expires_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días por defecto
       record.is_active,
       record.started_at
     );

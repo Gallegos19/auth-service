@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import { AuthCommandPort } from '../../../application/ports/input/AuthCommandPort';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class ParentalConsentController {
-  constructor(private readonly authCommandPort: AuthCommandPort) {}
-
+  constructor(
+    @inject('AuthCommandPort') private readonly authCommandPort: AuthCommandPort
+  ) {}
   /**
    * @swagger
    * /api/auth/parental-consent/request:

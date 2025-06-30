@@ -2,8 +2,9 @@ import { Request, Response } from 'express';
 import { AuthCommandPort } from '../../../application/ports/input/AuthCommandPort';
 import { RegisterUserDto } from '../dto/RegisterUserDto';
 import { LoginUserDto } from '../dto/LoginUserDto';
-import { inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class AuthController {
 constructor(
     @inject('AuthCommandPort') private readonly authCommandPort: AuthCommandPort
