@@ -9,33 +9,34 @@ datasource db {
 }
 
 model User {
-  id                String            @id @default(uuid())
-  email             String            @unique
-  password_hash     String
-  username          String?           @unique
-  first_name        String?
-  last_name         String?
-  date_of_birth     DateTime?
-  age               Int?
-  role              String            @default("user")
-  account_status    String            @default("pending_verification")
-  is_verified       Boolean           @default(false)
-  email_verified_at DateTime?
-  avatar_url        String?
-  timezone          String            @default("America/Mexico_City")
-  language          String            @default("es")
-  last_login_at     DateTime?
-  login_count       Int               @default(0)
-  created_at        DateTime          @default(now())
-  updated_at        DateTime          @updatedAt
-  deleted_at        DateTime?
-  created_by        String?
-  updated_by        String?
-  device_tokens     DeviceToken[]
-  oauth_accounts    OAuthAccount[]
-  parental_consents ParentalConsent[]
-  password_resets   PasswordReset[]
-  sessions          UserSession[]
+  id                  String              @id @default(uuid())
+  email               String              @unique
+  password_hash       String
+  username            String?             @unique
+  first_name          String?
+  last_name           String?
+  date_of_birth       DateTime?
+  age                 Int?
+  role                String              @default("user")
+  account_status      String              @default("pending_verification")
+  is_verified         Boolean             @default(false)
+  email_verified_at   DateTime?
+  avatar_url          String?
+  timezone            String              @default("America/Mexico_City")
+  language            String              @default("es")
+  last_login_at       DateTime?
+  login_count         Int                 @default(0)
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  deleted_at          DateTime?
+  created_by          String?
+  updated_by          String?
+  device_tokens       DeviceToken[]
+  email_verifications EmailVerification[]
+  oauth_accounts      OAuthAccount[]
+  parental_consents   ParentalConsent[]
+  password_resets     PasswordReset[]
+  sessions            UserSession[]
 
   @@index([email])
   @@index([account_status])
@@ -91,6 +92,26 @@ model ParentalConsent {
   @@index([is_approved])
   @@index([expires_at])
   @@map("parental_consents")
+}
+
+model EmailVerification {
+  id                 String    @id @default(uuid())
+  user_id            String
+  email              String
+  verification_token String    @unique
+  expires_at         DateTime
+  is_used            Boolean   @default(false)
+  used_at            DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  user               User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([verification_token])
+  @@index([email])
+  @@index([is_used])
+  @@index([expires_at])
+  @@map("email_verifications")
 }
 
 model PasswordReset {

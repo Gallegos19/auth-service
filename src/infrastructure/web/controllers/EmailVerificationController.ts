@@ -1,9 +1,7 @@
 // src/infrastructure/web/controllers/EmailVerificationController.ts
 import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
-import { SendEmailVerificationUseCase } from '../../../application/use-cases/SendEmailVerificationUseCase';
-import { VerifyEmailUseCase } from '../../../application/use-cases/VerifyEmailUseCase';
-import { ResendEmailVerificationUseCase } from '../../../application/use-cases/ResendEmailVerificationUseCase';
+import { ResendEmailVerificationUseCase, SendEmailVerificationUseCase, VerifyEmailUseCase } from '../../../application/use-cases/SendEmailVerificationUseCase';
 
 @injectable()
 export class EmailVerificationController {

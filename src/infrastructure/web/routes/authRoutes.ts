@@ -105,7 +105,6 @@ export function createAuthRoutes(
   );
 
    router.post('/send-verification',
-    authMiddleware, // Requiere estar logueado
     rateLimitMiddleware(3, 60), // 3 envíos por hora
     async (req, res) => {
       try {
