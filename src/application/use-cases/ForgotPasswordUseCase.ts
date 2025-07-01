@@ -1,20 +1,23 @@
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { IPasswordResetRepository } from '../../domain/repositories/IPasswordResetRepository';
-import { EmailServicePort } from '../ports/output/EmailServicePort';
-import { PasswordServicePort } from '../ports/output/PasswordServicePort';
+
 import { Email } from '../../domain/value-objects/Email';
 import { PasswordReset } from '../../domain/entities/PasswordReset';
+import { inject, injectable } from 'inversify';
+import { EmailServicePort } from '../ports/ouput/EmailServicePort';
+import { PasswordServicePort } from '../ports/ouput/PasswordServicePort';
 
 export interface ForgotPasswordCommand {
   email: string;
 }
 
+@injectable()
 export class ForgotPasswordUseCase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly passwordResetRepository: IPasswordResetRepository,
-    private readonly emailService: EmailServicePort,
-    private readonly passwordService: PasswordServicePort
+    @inject('IUserRepository') private readonly userRepository: IUserRepository,
+    @inject('IPasswordResetRepository') private readonly passwordResetRepository: IPasswordResetRepository,
+    @inject('EmailServicePort') private readonly emailService: EmailServicePort,
+    @inject('PasswordServicePort') private readonly passwordService: PasswordServicePort
   ) {}
 
   async execute(command: ForgotPasswordCommand): Promise<void> {

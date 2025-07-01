@@ -1,9 +1,9 @@
 import { IParentalConsentRepository } from '../../domain/repositories/IParentalConsentRepository';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { EmailServicePort } from '../ports/output/EmailServicePort';
 import { ParentalConsent } from '../../domain/entities/ParentalConsent';
 import { UserId } from '../../domain/value-objects/UserId';
 import { Email } from '../../domain/value-objects/Email';
+import { injectable } from 'inversify';
 
 export interface RequestParentalConsentCommand {
   minorUserId: string;
@@ -12,11 +12,15 @@ export interface RequestParentalConsentCommand {
   relationship: 'father' | 'mother' | 'guardian';
 }
 
+import { inject } from 'inversify';
+import { EmailServicePort } from '../ports/ouput/EmailServicePort';
+
+@injectable()
 export class RequestParentalConsentUseCase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly consentRepository: IParentalConsentRepository,
-    private readonly emailService: EmailServicePort
+    @inject('IUserRepository') private readonly userRepository: IUserRepository,
+    @inject('IParentalConsentRepository') private readonly consentRepository: IParentalConsentRepository,
+    @inject('EmailServicePort') private readonly emailService: EmailServicePort
   ) {}
 
   async execute(command: RequestParentalConsentCommand): Promise<void> {

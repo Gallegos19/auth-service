@@ -3,19 +3,21 @@ import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { EventPublisherPort } from '../ports/ouput/EventPublisherPort';
 import { EmailServicePort } from '../ports/ouput/EmailServicePort';
 import { ParentalConsentApprovedEvent } from '../../domain/events/ParentalConsentAprovvedEvent';
+import { injectable, inject } from 'inversify';
+import { PasswordServicePort } from '../ports/ouput/PasswordServicePort';
 
 export interface ApproveParentalConsentCommand {
   consentToken: string;
   ipAddress?: string;
   userAgent?: string;
 }
-
+@injectable()
 export class ApproveParentalConsentUseCase {
   constructor(
-    private readonly consentRepository: IParentalConsentRepository,
-    private readonly userRepository: IUserRepository,
-    private readonly eventPublisher: EventPublisherPort,
-    private readonly emailService: EmailServicePort
+    @inject('IParentalConsentRepository') private readonly consentRepository: IParentalConsentRepository,
+    @inject('IUserRepository') private readonly userRepository: IUserRepository,
+    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort,
+    @inject('EmailServicePort') private readonly emailService: EmailServicePort,
   ) {}
 
   async execute(command: ApproveParentalConsentCommand): Promise<void> {

@@ -12,6 +12,7 @@ import { inject, injectable } from 'inversify';
 @injectable()
 export class AuthApplicationService implements AuthCommandPort, AuthQueryPort {
   constructor(
+    @inject('ApproveParentalConsentUseCase') private readonly approveParentalConsentUseCase: any, // Implementar ApproveParentalConsentUseCase
     @inject('RegisterUserUseCase') private readonly registerUserUseCase: RegisterUserUseCase,
     @inject('LoginUserUseCase') private readonly loginUserUseCase: LoginUserUseCase,
     @inject('LogoutUserUseCase') private readonly logoutUserUseCase: LogoutUserUseCase,
@@ -81,8 +82,14 @@ export class AuthApplicationService implements AuthCommandPort, AuthQueryPort {
   }
 
   async approveParentalConsent(command: any): Promise<void> {
-    // Implementar ApproveParentalConsentUseCase
-    throw new Error('ApproveParentalConsentUseCase not implemented yet');
+    try {
+      console.log('🔄 AuthApplicationService.approveParentalConsent - Delegando a use case' );
+      await this.approveParentalConsentUseCase.execute(command);
+      console.log('✅ AuthApplicationService.approveParentalConsent - Use case completado');
+    } catch (error) {
+      console.error('❌ AuthApplicationService.approveParentalConsent - Error:', error);
+      throw error;
+    }
   }
 
   async resetPassword(command: any): Promise<void> {
