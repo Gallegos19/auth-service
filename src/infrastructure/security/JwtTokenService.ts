@@ -51,12 +51,13 @@ async generateAccessToken(payload: TokenPayload): Promise<string> {
 
 
   async validateToken(token: string): Promise<TokenPayload | null> {
+    console.log('Validating access token:', token); 
     try {
       const decoded = jwt.verify(token, this.accessTokenSecret, {
         issuer: 'xumaa-auth',
         audience: 'xumaa-api'
       }) as any;
-
+      console.log('Decoded token:', decoded);
       return {
         userId: decoded.userId || decoded.sub,
         email: decoded.email,

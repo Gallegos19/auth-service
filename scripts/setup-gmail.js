@@ -1,6 +1,6 @@
-// scripts/setup-gmail.js
-// Script para configurar Gmail OAuth2
+// scripts/setup-gmail.js - CORRECCIÓN INMEDIATA
 require('dotenv').config();
+require('ts-node').register();
 
 const { google } = require('googleapis');
 const readline = require('readline');
@@ -10,36 +10,30 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.send'];
 async function setupGmailOAuth() {
   console.log('🔧 Configurando Gmail OAuth2 para Xuma\'a Auth Service...\n');
 
-  // Paso 1: Verificar variables de entorno
   const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
   console.log(clientId, clientSecret);
+  
   if (!clientId || !clientSecret) {
     console.log('❌ Error: Variables de entorno faltantes\n');
     console.log('📝 Necesitas configurar las siguientes variables en tu .env:');
     console.log('   GMAIL_CLIENT_ID=tu-client-id');
     console.log('   GMAIL_CLIENT_SECRET=tu-client-secret');
     console.log('   GMAIL_USER=tu-email@gmail.com\n');
-    console.log('🔗 Para obtener estas credenciales:');
-    console.log('   1. Ve a https://console.developers.google.com/');
-    console.log('   2. Crea un nuevo proyecto o selecciona uno existente');
-    console.log('   3. Habilita la Gmail API');
-    console.log('   4. Crea credenciales OAuth 2.0');
-    console.log('   5. Agrega https://developers.google.com/oauthplayground como redirect URI');
     return;
   }
 
-  // Paso 2: Configurar OAuth2 client
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
     'https://developers.google.com/oauthplayground'
   );
 
-  // Paso 3: Generar URL de autorización
+  // CORRECCIÓN: Agregar prompt: 'consent' para forzar refresh token
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
+    prompt: 'consent' // 🔧 ESTO ES CRUCIAL
   });
 
   console.log('🔗 Autoriza la aplicación visitando esta URL:');
@@ -50,7 +44,6 @@ async function setupGmailOAuth() {
   console.log('   3. Copia el código de autorización');
   console.log('   4. Pégalo aquí abajo\n');
 
-  // Paso 4: Obtener código de autorización del usuario
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -60,19 +53,43 @@ async function setupGmailOAuth() {
     rl.close();
 
     try {
-      // Paso 5: Intercambiar código por tokens
+      console.log('\n🔄 Intercambiando código por tokens...');
       const { tokens } = await oauth2Client.getToken(code);
+      
+      // 🔧 CORRECCIÓN: Verificar que tenemos refresh token
+      console.log('🔍 Tokens recibidos:', {
+        access_token: tokens.access_token ? '✅ Recibido' : '❌ Faltante',
+        refresh_token: tokens.refresh_token ? '✅ Recibido' : '❌ Faltante',
+        expires_in: tokens.expiry_date ? '✅ Configurado' : '❌ No configurado'
+      });
+
+      if (!tokens.refresh_token) {
+        console.log('\n⚠️ NO SE OBTUVO REFRESH TOKEN');
+        console.log('🔧 Soluciones:');
+        console.log('   1. Ve a https://myaccount.google.com/permissions');
+        console.log('   2. Revoca acceso a "Xuma\'a Auth Service"');
+        console.log('   3. Ejecuta el comando nuevamente');
+        console.log('   4. Asegúrate de autorizar completamente\n');
+        return;
+      }
       
       console.log('\n✅ ¡Configuración exitosa!\n');
       console.log('📝 Agrega las siguientes variables a tu archivo .env:\n');
       console.log(`GMAIL_CLIENT_ID=${clientId}`);
       console.log(`GMAIL_CLIENT_SECRET=${clientSecret}`);
-      console.log(`GMAIL_REFRESH_TOKEN=${tokens.refresh_token}`);
+      console.log(`GMAIL_REFRESH_TOKEN=${tokens.refresh_token}`); // 🔧 Ahora debería aparecer
       console.log(`GMAIL_USER=tu-email@gmail.com`);
       console.log('\n🔄 Recuerda reiniciar el servidor después de actualizar el .env');
       
     } catch (error) {
       console.error('❌ Error obteniendo tokens:', error);
+      
+      if (error.message && error.message.includes('invalid_grant')) {
+        console.log('\n🔧 Error invalid_grant - Soluciones:');
+        console.log('   1. El código expiró (máximo 10 minutos)');
+        console.log('   2. El código ya se usó anteriormente');
+        console.log('   3. Obtén un código NUEVO y úsalo inmediatamente');
+      }
     }
   });
 }
@@ -81,19 +98,35 @@ async function setupGmailOAuth() {
 async function testGmailSending() {
   console.log('📧 Probando envío de email...\n');
 
-try {
+  // Verificar variables requeridas
+  const requiredVars = ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN', 'GMAIL_USER'];
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+
+  if (missingVars.length > 0) {
+    console.log('❌ Variables faltantes en .env:', missingVars.join(', '));
+    console.log('🔧 Ejecuta primero: npm run gmail:setup');
+    return;
+  }
+
+  try {
     const { GmailEmailService } = require('../src/infrastructure/external/GmailEmailService');
     const emailService = new GmailEmailService();
 
     await emailService.sendWelcomeEmail(
-        process.env.GMAIL_USER,
-        'Usuario de Prueba'
+      process.env.GMAIL_USER,
+      'Usuario de Prueba'
     );
 
     console.log('✅ Email de prueba enviado exitosamente!');
-} catch (error) {
-    console.error('❌ Error enviando email de prueba:', error);
-}
+    console.log(`📧 Revisa la bandeja de entrada de: ${process.env.GMAIL_USER}`);
+  } catch (error) {
+    console.error('❌ Error enviando email de prueba:', error.message);
+    
+    if (error.message.includes('Invalid Credentials')) {
+      console.log('\n🔧 El refresh token puede haber expirado o ser inválido.');
+      console.log('💡 Solución: npm run gmail:setup');
+    }
+  }
 }
 
 // Ejecutar según argumentos

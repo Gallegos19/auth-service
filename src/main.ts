@@ -136,8 +136,8 @@ async function bootstrap() {
     // ==================
     // API ROUTES
     // ==================
-    const authController = container.get<AuthController>('AuthController');
-    const tokenController = container.get<TokenController>('TokenController');
+    const authController = await container.getAsync<AuthController>('AuthController');
+    const tokenController = await container.getAsync<TokenController>('TokenController');
     const parentalConsentController = container.get<ParentalConsentController>('ParentalConsentController');
 
     app.use('/api/auth', createAuthRoutes(
@@ -145,6 +145,7 @@ async function bootstrap() {
       tokenController, 
       parentalConsentController
     ));
+
 
     // Redirect para documentación
     app.get('/', (req, res) => {

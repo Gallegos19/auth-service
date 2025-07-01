@@ -1,8 +1,8 @@
 // src/infrastructure/external/GmailEmailService.ts
-import { EmailServicePort } from '../../application/ports/ouput/EmailServicePort';
-import { injectable } from 'inversify';
-import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
+import { EmailServicePort } from "../../application/ports/ouput/EmailServicePort";
+import { injectable } from "inversify";
+import nodemailer from "nodemailer";
+import { google } from "googleapis";
 
 interface EmailTemplate {
   subject: string;
@@ -23,11 +23,11 @@ export class GmailEmailService implements EmailServicePort {
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GMAIL_CLIENT_ID,
       process.env.GMAIL_CLIENT_SECRET,
-      'https://developers.google.com/oauthplayground' // Redirect URL
+      "https://developers.google.com/oauthplayground" // Redirect URL
     );
 
     this.oauth2Client.setCredentials({
-      refresh_token: process.env.GMAIL_REFRESH_TOKEN
+      refresh_token: process.env.GMAIL_REFRESH_TOKEN,
     });
   }
 
@@ -35,51 +35,62 @@ export class GmailEmailService implements EmailServicePort {
     if (this.transporter) {
       return this.transporter;
     }
-
     try {
       const accessToken = await this.oauth2Client.getAccessToken();
-
-      this.transporter = nodemailer.createTransporter({
-        service: 'gmail',
+      this.transporter = nodemailer.createTransport({
+        service: "gmail",
+        port: 465,
+        secure: true,
+        debug: true,
+        logger: true,
         auth: {
-          type: 'OAuth2',
+          type: "OAuth2",
           user: process.env.GMAIL_USER,
           clientId: process.env.GMAIL_CLIENT_ID,
           clientSecret: process.env.GMAIL_CLIENT_SECRET,
           refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-          accessToken: accessToken.token
-        }
+          accessToken: accessToken.token,
+        },
       } as any);
 
-      console.log('✅ Gmail transporter creado exitosamente');
+      console.log("✅ Gmail transporter creado exitosamente");
       return this.transporter;
     } catch (error) {
-      console.error('❌ Error creando Gmail transporter:', error);
-      throw new Error('Failed to create Gmail transporter');
+      console.error("❌ Error creando Gmail transporter:", error);
+      throw new Error("Failed to create Gmail transporter");
     }
   }
 
-  async sendParentalConsentEmail(parentEmail: string, consentToken: string, minorName: string): Promise<void> {
+  async sendParentalConsentEmail(
+    parentEmail: string,
+    consentToken: string,
+    minorName: string
+  ): Promise<void> {
     const template = this.getParentalConsentTemplate(consentToken, minorName);
-    
+
     await this.sendEmail({
       to: parentEmail,
       subject: template.subject,
       html: template.html,
-      text: template.text
+      text: template.text,
     });
 
-    console.log(`📧 Email de consentimiento parental enviado a ${parentEmail} para ${minorName}`);
+    console.log(
+      `📧 Email de consentimiento parental enviado a ${parentEmail} para ${minorName}`
+    );
   }
 
-  async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+  async sendPasswordResetEmail(
+    email: string,
+    resetToken: string
+  ): Promise<void> {
     const template = this.getPasswordResetTemplate(resetToken);
-    
+
     await this.sendEmail({
       to: email,
       subject: template.subject,
       html: template.html,
-      text: template.text
+      text: template.text,
     });
 
     console.log(`📧 Email de reset de password enviado a ${email}`);
@@ -87,25 +98,28 @@ export class GmailEmailService implements EmailServicePort {
 
   async sendWelcomeEmail(email: string, firstName?: string): Promise<void> {
     const template = this.getWelcomeTemplate(firstName);
-    
+
     await this.sendEmail({
       to: email,
       subject: template.subject,
       html: template.html,
-      text: template.text
+      text: template.text,
     });
 
     console.log(`📧 Email de bienvenida enviado a ${email}`);
   }
 
-  async sendAccountVerificationEmail(email: string, verificationToken: string): Promise<void> {
+  async sendAccountVerificationEmail(
+    email: string,
+    verificationToken: string
+  ): Promise<void> {
     const template = this.getVerificationTemplate(verificationToken);
-    
+
     await this.sendEmail({
       to: email,
       subject: template.subject,
       html: template.html,
-      text: template.text
+      text: template.text,
     });
 
     console.log(`📧 Email de verificación enviado a ${email}`);
@@ -119,26 +133,31 @@ export class GmailEmailService implements EmailServicePort {
   }): Promise<void> {
     try {
       const transporter = await this.createTransporter();
-      
+
       const mailOptions = {
         from: `"Xuma'a 🌱" <${process.env.GMAIL_USER}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
-        text: options.text
+        text: options.text,
       };
 
       const result = await transporter.sendMail(mailOptions);
-      console.log('✅ Email enviado exitosamente:', result.messageId);
+      console.log("✅ Email enviado exitosamente:", result.messageId);
     } catch (error) {
-      console.error('❌ Error enviando email:', error);
-      throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("❌ Error enviando email:", error);
+      throw new Error(
+        `Failed to send email: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
-  private getParentalConsentTemplate(consentToken: string, minorName: string): EmailTemplate {
-    const consentUrl = `${process.env.FRONTEND_URL || 'https://xumaa.app'}/parental-consent/${consentToken}`;
-    
+  private getParentalConsentTemplate(
+    consentToken: string,
+    minorName: string
+  ): EmailTemplate {
+    const consentUrl = `${process.env.FRONTEND_URL || "https://xumaa.app"}/parental-consent/${consentToken}`;
+
     return {
       subject: `🌱 Consentimiento Parental Requerido - Xuma'a`,
       html: `
@@ -210,13 +229,13 @@ export class GmailEmailService implements EmailServicePort {
         Si no autorizó este registro, puede ignorar este email.
         
         © 2025 Xuma'a - Universidad Politécnica de Chiapas
-      `
+      `,
     };
   }
 
   private getPasswordResetTemplate(resetToken: string): EmailTemplate {
-    const resetUrl = `${process.env.FRONTEND_URL || 'https://xumaa.app'}/reset-password/${resetToken}`;
-    
+    const resetUrl = `${process.env.FRONTEND_URL || "https://xumaa.app"}/reset-password/${resetToken}`;
+
     return {
       subject: `🔒 Restablecer Contraseña - Xuma'a`,
       html: `
@@ -279,13 +298,13 @@ export class GmailEmailService implements EmailServicePort {
         Si no solicitaste esto, puedes ignorar este email.
         
         © 2025 Xuma'a
-      `
+      `,
     };
   }
 
   private getWelcomeTemplate(firstName?: string): EmailTemplate {
-    const name = firstName || 'Eco-warrior';
-    
+    const name = firstName || "Eco-warrior";
+
     return {
       subject: `🌱 ¡Bienvenido a Xuma'a, ${name}!`,
       html: `
@@ -334,7 +353,7 @@ export class GmailEmailService implements EmailServicePort {
               </div>
               
               <center>
-                <a href="${process.env.FRONTEND_URL || 'https://xumaa.app'}/dashboard" class="button">🚀 Comenzar mi aventura</a>
+                <a href="${process.env.FRONTEND_URL || "https://xumaa.app"}/dashboard" class="button">🚀 Comenzar mi aventura</a>
               </center>
               
               <p>¡Que tengas una excelente experiencia aprendiendo y protegiendo nuestro planeta! 🌍</p>
@@ -360,18 +379,18 @@ export class GmailEmailService implements EmailServicePort {
         - Colecciona mascotas virtuales mexicanas
         - Gana badges por tu impacto ambiental
         
-        Visita: ${process.env.FRONTEND_URL || 'https://xumaa.app'}/dashboard
+        Visita: ${process.env.FRONTEND_URL || "https://xumaa.app"}/dashboard
         
         ¡Que tengas una excelente experiencia!
         
         © 2025 Xuma'a
-      `
+      `,
     };
   }
 
   private getVerificationTemplate(verificationToken: string): EmailTemplate {
-    const verificationUrl = `${process.env.FRONTEND_URL || 'https://xumaa.app'}/verify-email/${verificationToken}`;
-    
+    const verificationUrl = `${process.env.FRONTEND_URL || "https://xumaa.app"}/verify-email/${verificationToken}`;
+
     return {
       subject: `📧 Verifica tu cuenta - Xuma'a`,
       html: `
@@ -424,7 +443,7 @@ export class GmailEmailService implements EmailServicePort {
         Para completar tu registro, verifica tu email visitando: ${verificationUrl}
         
         © 2025 Xuma'a
-      `
+      `,
     };
   }
 }
