@@ -12,6 +12,7 @@ import { AuthController } from './infrastructure/web/controllers/AuthController'
 import { TokenController } from './infrastructure/web/controllers/TokenController';
 import { ParentalConsentController } from './infrastructure/web/controllers/ParentalConsentController';
 import { setupSwagger } from './infrastructure/web/swagger/swagger.config';
+import { EmailVerificationController } from './infrastructure/web/controllers/EmailVerificationController';
 
 /**
  * @swagger
@@ -139,11 +140,13 @@ async function bootstrap() {
     const authController = await container.getAsync<AuthController>('AuthController');
     const tokenController = await container.getAsync<TokenController>('TokenController');
     const parentalConsentController = container.get<ParentalConsentController>('ParentalConsentController');
+    const emailVerificationController = container.get<EmailVerificationController>('EmailVerificationController');
 
     app.use('/api/auth', createAuthRoutes(
       authController, 
       tokenController, 
-      parentalConsentController
+      parentalConsentController,
+      emailVerificationController
     ));
 
 

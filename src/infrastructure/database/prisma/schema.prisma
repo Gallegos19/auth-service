@@ -40,6 +40,7 @@ model User {
   password_resets PasswordReset[]
   oauth_accounts  OAuthAccount[]
   device_tokens   DeviceToken[]
+  email_verifications EmailVerification[]
 
   @@map("users")
   @@index([email])
@@ -101,6 +102,28 @@ model ParentalConsent {
   @@index([expires_at])
 }
 
+model EmailVerification {
+  id                 String    @id @default(uuid())
+  user_id            String
+  email              String
+  verification_token String    @unique
+  expires_at         DateTime
+  is_used            Boolean   @default(false)
+  used_at            DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  // Relación
+  user               User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("email_verifications")
+  @@index([user_id])
+  @@index([verification_token])
+  @@index([email])
+  @@index([is_used])
+  @@index([expires_at])
+}
+
 model PasswordReset {
   id          String    @id @default(uuid())
   user_id     String
@@ -137,6 +160,7 @@ model OAuthAccount {
   @@index([user_id])
   @@index([provider])
 }
+
 
 model DeviceToken {
   id            String    @id @default(uuid())

@@ -1,4 +1,4 @@
-// src/application/use-cases/RegisterUserUseCase.ts
+// src/application/use-cases/RegisterUserUseCase.ts (ACTUALIZADO)
 import { injectable, inject } from 'inversify';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { Email } from '../../domain/value-objects/Email';
@@ -7,6 +7,9 @@ import { Age } from '../../domain/value-objects/Age';
 import { User } from '../../domain/entities/User';
 import { PasswordServicePort } from '../ports/ouput/PasswordServicePort';
 import { EventPublisherPort } from '../ports/ouput/EventPublisherPort';
+import { EmailServicePort } from '../ports/ouput/EmailServicePort';
+import { IEmailVerificationRepository } from '../../domain/repositories/IEmailVerificationRepository';
+import { EmailVerification } from '../../domain/entities/EmailVerification';
 
 export interface RegisterUserCommand {
   email: string;
@@ -21,15 +24,19 @@ export interface RegisterUserResponse {
   userId: string;
   email: string;
   requiresParentalConsent: boolean;
+  requiresEmailVerification: boolean;
   accountStatus: string;
+  message: string;
 }
 
 @injectable()
 export class RegisterUserUseCase {
   constructor(
     @inject('IUserRepository') private readonly userRepository: IUserRepository,
+    @inject('IEmailVerificationRepository') private readonly emailVerificationRepository: IEmailVerificationRepository,
     @inject('PasswordServicePort') private readonly passwordService: PasswordServicePort,
-    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort
+    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort,
+    @inject('EmailServicePort') private readonly emailService: EmailServicePort
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserResponse> {
@@ -73,8 +80,41 @@ export class RegisterUserUseCase {
 
       // Persistir usuario
       await this.userRepository.save(user);
-
       console.log('✅ Usuario persistido en base de datos');
+
+      // Determinar siguiente acción según la edad
+      const requiresParentalConsent = user.needsParentalConsent();
+      const requiresEmailVerification = !requiresParentalConsent; // Solo adultos necesitan verificar email
+
+      let message = 'User registered successfully';
+
+      if (requiresParentalConsent) {
+        // Menores de 13: necesitan consentimiento parental
+        message = 'Registration successful. Parental consent required to activate account.';
+      } else {
+        // Mayores de 13: necesitan verificar email
+        try {
+          // Generar y enviar verificación de email automáticamente
+          const verificationToken = await this.passwordService.generateResetToken();
+          const emailVerification = EmailVerification.create(
+            user.getId(),
+            user.getEmail(),
+            verificationToken
+          );
+
+          await this.emailVerificationRepository.save(emailVerification);
+          await this.emailService.sendAccountVerificationEmail(
+            user.getEmail().value,
+            verificationToken
+          );
+
+          message = 'Registration successful. Please check your email to verify your account.';
+          console.log('✅ Email de verificación enviado');
+        } catch (emailError) {
+          console.warn('⚠️ Error enviando email de verificación (no crítico):', emailError);
+          message = 'Registration successful. You can request email verification later.';
+        }
+      }
 
       // Publicar evento (non-blocking)
       try {
@@ -82,23 +122,23 @@ export class RegisterUserUseCase {
         console.log('✅ Evento publicado correctamente');
       } catch (eventError) {
         console.warn('⚠️ Error publicando evento (no crítico):', eventError);
-        // No lanzamos error aquí porque el usuario ya fue creado exitosamente
       }
 
-      const response = {
+      const response: RegisterUserResponse = {
         userId: user.getId().value,
         email: user.getEmail().value,
-        requiresParentalConsent: user.needsParentalConsent(),
-        accountStatus: user.getAccountStatus()
+        requiresParentalConsent,
+        requiresEmailVerification,
+        accountStatus: user.getAccountStatus(),
+        message
       };
 
       console.log('✅ RegisterUserUseCase completado:', response);
-
       return response;
       
     } catch (error) {
       console.error('❌ Error en RegisterUserUseCase:', error);
-      throw error; // Re-lanzar para que sea manejado por el controller
+      throw error;
     }
   }
 }

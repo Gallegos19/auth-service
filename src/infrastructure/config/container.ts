@@ -53,6 +53,10 @@ console.log('🔧 Configurando container de dependencias...');
 
 // External Services
 import { GmailEmailService } from '../external/GmailEmailService';
+import { IEmailVerificationRepository } from '../../domain/repositories/IEmailVerificationRepository';
+import { PrismaEmailVerificationRepository } from '../database/repositories/PrismaEmailVerificationRepository';
+import { ResendEmailVerificationUseCase, SendEmailVerificationUseCase, VerifyEmailUseCase } from '../../application/use-cases/SendEmailVerificationUseCase';
+import { EmailVerificationController } from '../web/controllers/EmailVerificationController';
 
 // ==================
 // INFRASTRUCTURE
@@ -72,7 +76,7 @@ container.bind<TokenServicePort>('TokenServicePort').to(JwtTokenService).inSingl
 container.bind<PasswordServicePort>('PasswordServicePort').to(BcryptPasswordService).inSingletonScope();
 
 // Email Service - Usar Gmail real si las credenciales están configuradas
-if (config.gmail?.clientId && config.gmail?.clientSecret && config.gmail?.refreshToken) {
+if (config.email?.clientId && config.email?.clientSecret && config.email?.refreshToken) {
   container.bind<EmailServicePort>('EmailServicePort').to(GmailEmailService).inSingletonScope();
   console.log('✅ Gmail EmailService configurado');
 } else {
@@ -109,6 +113,8 @@ container.bind<IUserRepository>('IUserRepository').to(PrismaUserRepository);
 container.bind<IUserSessionRepository>('IUserSessionRepository').to(PrismaUserSessionRepository);
 container.bind<IParentalConsentRepository>('IParentalConsentRepository').to(PrismaParentalConsentRepository);
 container.bind<IPasswordResetRepository>('IPasswordResetRepository').to(PrismaPasswordResetRepository);
+container.bind<IEmailVerificationRepository>('IEmailVerificationRepository').to(PrismaEmailVerificationRepository);
+
 console.log('✅ Repositorios configurados');
 
 // ==================
@@ -122,6 +128,10 @@ container.bind<RefreshTokenUseCase>('RefreshTokenUseCase').to(RefreshTokenUseCas
 container.bind<RequestParentalConsentUseCase>('RequestParentalConsentUseCase').to(RequestParentalConsentUseCase);
 container.bind<ForgotPasswordUseCase>('ForgotPasswordUseCase').to(ForgotPasswordUseCase);
 container.bind<ApproveParentalConsentUseCase>('ApproveParentalConsentUseCase').to(ApproveParentalConsentUseCase);
+container.bind<SendEmailVerificationUseCase>('SendEmailVerificationUseCase').to(SendEmailVerificationUseCase);
+container.bind<VerifyEmailUseCase>('VerifyEmailUseCase').to(VerifyEmailUseCase);
+container.bind<ResendEmailVerificationUseCase>('ResendEmailVerificationUseCase').to(ResendEmailVerificationUseCase);
+
 console.log('✅ Use Cases configurados');
 
 // ==================
@@ -141,6 +151,8 @@ console.log('✅ Application Services configurados');
 container.bind<AuthController>('AuthController').to(AuthController);
 container.bind<TokenController>('TokenController').to(TokenController);
 container.bind<ParentalConsentController>('ParentalConsentController').to(ParentalConsentController);
+container.bind<EmailVerificationController>('EmailVerificationController').to(EmailVerificationController);
+
 console.log('✅ Controllers configurados');
 
 // Configuration binding

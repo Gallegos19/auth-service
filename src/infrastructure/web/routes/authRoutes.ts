@@ -6,6 +6,7 @@ import { validationMiddleware } from '../middleware/validationMiddleware';
 import { rateLimitMiddleware } from '../middleware/rateLimitMiddleware';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { z } from 'zod';
+import { EmailVerificationController } from '../controllers/EmailVerificationController';
 
 // Schemas de validación
 const RegisterSchema = z.object({
@@ -35,7 +36,8 @@ const ParentalConsentSchema = z.object({
 export function createAuthRoutes(
   authController: AuthController,
   tokenController: TokenController,
-  parentalConsentController: ParentalConsentController
+  parentalConsentController: ParentalConsentController, 
+  emailVerificationController: EmailVerificationController
 ): Router {
   const router = Router();
 
@@ -102,6 +104,67 @@ export function createAuthRoutes(
     }
   );
 
+   router.post('/send-verification',
+    authMiddleware, // Requiere estar logueado
+    rateLimitMiddleware(3, 60), // 3 envíos por hora
+    async (req, res) => {
+      try {
+        await emailVerificationController.sendVerification(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /send-verification:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
+  );
+
+  router.post('/verify-email/:token',
+    rateLimitMiddleware(10, 60), // 10 verificaciones por hora
+    async (req, res) => {
+      try {
+        await emailVerificationController.verifyEmail(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /verify-email:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
+  );
+
+   router.post('/resend-verification',
+    rateLimitMiddleware(3, 60), // 3 reenvíos por hora
+    async (req, res) => {
+      try {
+        await emailVerificationController.resendVerification(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /resend-verification:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
+  );
+
+  router.get('/verification-status/:userId',
+    authMiddleware,
+    rateLimitMiddleware(20, 15), // 20 consultas por 15 minutos
+    async (req, res) => {
+      try {
+        await emailVerificationController.getVerificationStatus(req, res);
+      } catch (error) {
+        console.error('❌ Error en ruta /verification-status:', error);
+        res.status(500).json({
+          success: false,
+          error: 'Internal server error'
+        });
+      }
+    }
+  );
   // =================
   // TOKEN ROUTES
   // =================
