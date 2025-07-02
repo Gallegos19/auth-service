@@ -150,7 +150,6 @@ export function createAuthRoutes(
   );
 
   router.get('/verification-status/:userId',
-    authMiddleware,
     rateLimitMiddleware(20, 15), // 20 consultas por 15 minutos
     async (req, res) => {
       try {

@@ -57,6 +57,7 @@ import { IEmailVerificationRepository } from '../../domain/repositories/IEmailVe
 import { PrismaEmailVerificationRepository } from '../database/repositories/PrismaEmailVerificationRepository';
 import { ResendEmailVerificationUseCase, SendEmailVerificationUseCase, VerifyEmailUseCase } from '../../application/use-cases/SendEmailVerificationUseCase';
 import { EmailVerificationController } from '../web/controllers/EmailVerificationController';
+import { VerificationStatusUseCase } from '../../application/use-cases/VerificationStatusUseCase';
 
 // ==================
 // INFRASTRUCTURE
@@ -131,6 +132,7 @@ container.bind<ApproveParentalConsentUseCase>('ApproveParentalConsentUseCase').t
 container.bind<SendEmailVerificationUseCase>('SendEmailVerificationUseCase').to(SendEmailVerificationUseCase);
 container.bind<VerifyEmailUseCase>('VerifyEmailUseCase').to(VerifyEmailUseCase);
 container.bind<ResendEmailVerificationUseCase>('ResendEmailVerificationUseCase').to(ResendEmailVerificationUseCase);
+container.bind<VerificationStatusUseCase>('VerificationStatusUseCase').to(VerificationStatusUseCase);
 
 console.log('✅ Use Cases configurados');
 

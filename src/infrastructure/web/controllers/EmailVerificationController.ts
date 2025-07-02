@@ -2,13 +2,15 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import { ResendEmailVerificationUseCase, SendEmailVerificationUseCase, VerifyEmailUseCase } from '../../../application/use-cases/SendEmailVerificationUseCase';
+import { VerificationStatusUseCase } from '../../../application/use-cases/VerificationStatusUseCase';
 
 @injectable()
 export class EmailVerificationController {
   constructor(
     @inject('SendEmailVerificationUseCase') private readonly sendEmailVerificationUseCase: SendEmailVerificationUseCase,
     @inject('VerifyEmailUseCase') private readonly verifyEmailUseCase: VerifyEmailUseCase,
-    @inject('ResendEmailVerificationUseCase') private readonly resendEmailVerificationUseCase: ResendEmailVerificationUseCase
+    @inject('ResendEmailVerificationUseCase') private readonly resendEmailVerificationUseCase: ResendEmailVerificationUseCase,
+    @inject('VerificationStatusUseCase') private readonly verificationStatusUseCase: VerificationStatusUseCase 
   ) {}
 
   /**
@@ -287,18 +289,15 @@ export class EmailVerificationController {
   async getVerificationStatus(req: Request, res: Response): Promise<void> {
     try {
       const { userId } = req.params;
-
-      // Esta implementación requiere agregar el método al repository o use case
-      // Por ahora devolvemos una respuesta básica
-      res.status(200).json({
-        success: true,
-        data: {
-          userId,
-          isVerified: false, // implementar consulta real
-          canLogin: false,
-          hasPendingVerification: false
+        if (!userId) {
+            res.status(400).json({
+            success: false,
+            error: 'User ID is required'
+            });
+            return;
         }
-      });
+        const result = await this.verificationStatusUseCase.execute(userId);
+        res.json(result);
     } catch (error: any) {
       res.status(400).json({
         success: false,
