@@ -29,7 +29,7 @@ export const config = {
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100')
   },
 
-   oauth: {
+  oauth: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
@@ -43,7 +43,10 @@ export const config = {
   },
 
   email: {
-    serviceUrl: process.env.EMAIL_SERVICE_URL || 'http://notification-service:3000'
+    serviceUrl: process.env.EMAIL_SERVICE_URL || 'http://notification-service:3000',
+    clientId: process.env.EMAIL_CLIENT_ID || '',
+    clientSecret: process.env.EMAIL_CLIENT_SECRET || '',
+    refreshToken: process.env.EMAIL_REFRESH_TOKEN || ''
   },
 
   // Frontend URLs

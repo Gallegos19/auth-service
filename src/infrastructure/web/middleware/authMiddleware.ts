@@ -25,6 +25,7 @@ export const authMiddleware = async (
       });
       return;
     }
+  
 
     const authQueryPort = container.get<AuthQueryPort>('AuthQueryPort');
     const result = await authQueryPort.validateToken({ accessToken: token });

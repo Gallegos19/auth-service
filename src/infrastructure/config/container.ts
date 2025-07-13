@@ -19,7 +19,7 @@ import { AuthApplicationService } from '../../application/services/AuthApplicati
 import { TokenValidationService } from '../../application/services/TokenValidationService';
 import { JwtTokenService } from '../security/JwtTokenService';
 import { EmailService } from '../external/EmailService';
-import { RabbitMQEventPublisher } from '../messaging/RabbitMQEventPublisher';
+import { MockEventPublisher } from '../messaging/MockEventPublisher';
 
 // Repositories
 import { PrismaUserRepository } from '../database/repositories/PrismaUserRepository';
@@ -103,7 +103,7 @@ if (config.email?.clientId && config.email?.clientSecret && config.email?.refres
   console.log('⚠️ Mock EmailService configurado (configura Gmail para emails reales)');
 }
 
-container.bind<EventPublisherPort>('EventPublisherPort').to(RabbitMQEventPublisher).inSingletonScope();
+container.bind<EventPublisherPort>('EventPublisherPort').to(MockEventPublisher).inSingletonScope();
 
 console.log('✅ Servicios externos configurados');
 

@@ -1,4 +1,4 @@
-import { DomainEvent } from '../../application/ports/output/EventPublisherPort';
+import { DomainEvent } from "../../application/ports/ouput/EventPublisherPort";
 
 export class UserRegisteredEvent implements DomainEvent {
   public readonly eventType = 'USER_REGISTERED';

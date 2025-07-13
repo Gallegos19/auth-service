@@ -97,7 +97,7 @@ export class PrismaUserRepository implements IUserRepository {
       orderBy: { created_at: 'desc' }
     });
 
-    return users.map((user: User) => this.toDomain(user));
+    return users.map(userRecord => this.toDomain(userRecord));
   }
 
   private toDomain(record: any): User {

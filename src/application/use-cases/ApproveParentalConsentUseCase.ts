@@ -16,7 +16,6 @@ export class ApproveParentalConsentUseCase {
   constructor(
     @inject('IParentalConsentRepository') private readonly consentRepository: IParentalConsentRepository,
     @inject('IUserRepository') private readonly userRepository: IUserRepository,
-    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort,
     @inject('EmailServicePort') private readonly emailService: EmailServicePort,
   ) {}
 
@@ -49,13 +48,13 @@ export class ApproveParentalConsentUseCase {
     await this.userRepository.save(minorUser);
 
     // Publicar evento
-    const event = new ParentalConsentApprovedEvent(
-      consent.getMinorUserId().value,
-      consent.getParentEmail().value,
-      consent.getConsentToken(),
-      new Date()
-    );
-    await this.eventPublisher.publish(event);
+    // const event = new ParentalConsentApprovedEvent(
+    //   consent.getMinorUserId().value,
+    //   consent.getParentEmail().value,
+    //   consent.getConsentToken(),
+    //   new Date()
+    // );
+    // await this.eventPublisher.publish(event);
 
     // Enviar email de bienvenida al menor
     await this.emailService.sendWelcomeEmail(
