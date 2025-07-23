@@ -155,6 +155,10 @@ async function bootstrap() {
 
     app.use('/api/admin', createAdminRoutes(adminUserController));
 
+    // Device Token routes
+    const { deviceTokenRoutes } = await import('./infrastructure/web/routes/deviceTokenRoutes');
+    app.use('/api/device-tokens', deviceTokenRoutes);
+
 
     // Redirect para documentación
     app.get('/', (req, res) => {

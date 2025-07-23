@@ -23,6 +23,13 @@ import { RequestParentalConsentUseCase } from '../../application/use-cases/Reque
 import { ForgotPasswordUseCase } from '../../application/use-cases/ForgotPasswordUseCase';
 import { ApproveParentalConsentUseCase } from '../../application/use-cases/ApproveParentalConsentUseCase';
 
+// Device Token Use Cases
+import { CreateDeviceTokenUseCase } from '../../application/use-cases/CreateDeviceTokenUseCase';
+import { GetDeviceTokenUseCase } from '../../application/use-cases/GetDeviceTokenUseCase';
+import { UpdateDeviceTokenUseCase } from '../../application/use-cases/UpdateDeviceTokenUseCase';
+import { DeleteDeviceTokenUseCase } from '../../application/use-cases/DeleteDeviceTokenUseCase';
+import { ListDeviceTokensUseCase } from '../../application/use-cases/ListDeviceTokensUseCase';
+
 // Services
 import { BcryptPasswordService } from '../security/BcrytPasswordService';
 import { AuthApplicationService } from '../../application/services/AuthApplicationService';
@@ -36,18 +43,21 @@ import { PrismaUserRepository } from '../database/repositories/PrismaUserReposit
 import { PrismaUserSessionRepository } from '../database/repositories/PrismaUserSessionRepository';
 import { PrismaParentalConsentRepository } from '../database/repositories/PrismaParentalConsentRepository';
 import { PrismaPasswordResetRepository } from '../database/repositories/PrismaPasswordResetRepository';
+import { PrismaDeviceTokenRepository } from '../database/repositories/PrismaDeviceTokenRepository';
 
 // Controllers
 import { AuthController } from '../web/controllers/AuthController';
 import { AdminUserController } from '../web/controllers/AdminUserController';
 import { TokenController } from '../web/controllers/TokenController';
 import { ParentalConsentController } from '../web/controllers/ParentalConsentController';
+import { DeviceTokenController } from '../web/controllers/DeviceTokenController';
 
 // Types
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { IUserSessionRepository } from '../../domain/repositories/IUserSessionRepository';
 import { IParentalConsentRepository } from '../../domain/repositories/IParentalConsentRepository';
 import { IPasswordResetRepository } from '../../domain/repositories/IPasswordResetRepository';
+import { IDeviceTokenRepository } from '../../domain/repositories/IDeviceTokenRepository';
 import { TokenServicePort } from '../../application/ports/ouput/TokenServicePort';
 import { PasswordServicePort } from '../../application/ports/ouput/PasswordServicePort';
 import { AuthCommandPort } from '../../application/ports/input/AuthCommandPort';
@@ -131,6 +141,7 @@ container.bind<IUserSessionRepository>('IUserSessionRepository').to(PrismaUserSe
 container.bind<IParentalConsentRepository>('IParentalConsentRepository').to(PrismaParentalConsentRepository);
 container.bind<IPasswordResetRepository>('IPasswordResetRepository').to(PrismaPasswordResetRepository);
 container.bind<IEmailVerificationRepository>('IEmailVerificationRepository').to(PrismaEmailVerificationRepository);
+container.bind<IDeviceTokenRepository>('IDeviceTokenRepository').to(PrismaDeviceTokenRepository);
 
 console.log('✅ Repositorios configurados');
 
@@ -160,6 +171,13 @@ container.bind<VerifyEmailUseCase>('VerifyEmailUseCase').to(VerifyEmailUseCase);
 container.bind<ResendEmailVerificationUseCase>('ResendEmailVerificationUseCase').to(ResendEmailVerificationUseCase);
 container.bind<VerificationStatusUseCase>('VerificationStatusUseCase').to(VerificationStatusUseCase);
 
+// Device Token Use Cases
+container.bind<CreateDeviceTokenUseCase>('CreateDeviceTokenUseCase').to(CreateDeviceTokenUseCase);
+container.bind<GetDeviceTokenUseCase>('GetDeviceTokenUseCase').to(GetDeviceTokenUseCase);
+container.bind<UpdateDeviceTokenUseCase>('UpdateDeviceTokenUseCase').to(UpdateDeviceTokenUseCase);
+container.bind<DeleteDeviceTokenUseCase>('DeleteDeviceTokenUseCase').to(DeleteDeviceTokenUseCase);
+container.bind<ListDeviceTokensUseCase>('ListDeviceTokensUseCase').to(ListDeviceTokensUseCase);
+
 console.log('✅ Use Cases configurados');
 
 // ==================
@@ -181,6 +199,7 @@ container.bind<AdminUserController>('AdminUserController').to(AdminUserControlle
 container.bind<TokenController>('TokenController').to(TokenController);
 container.bind<ParentalConsentController>('ParentalConsentController').to(ParentalConsentController);
 container.bind<EmailVerificationController>('EmailVerificationController').to(EmailVerificationController);
+container.bind<DeviceTokenController>('DeviceTokenController').to(DeviceTokenController);
 
 console.log('✅ Controllers configurados');
 
