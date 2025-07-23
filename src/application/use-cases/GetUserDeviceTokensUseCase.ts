@@ -61,7 +61,7 @@ export class GetUserDeviceTokensUseCase {
     }));
 
     return {
-      userId: userId.value(),
+      userId: userId.value,
       deviceTokens: deviceTokenDtos,
       totalCount: deviceTokenDtos.length
     };

@@ -56,7 +56,7 @@ export class RegisterDeviceTokenUseCase {
 
         return {
           id: existingToken.getId(),
-          userId: existingToken.getUserId().value(),
+          userId: existingToken.getUserId().value,
           token: existingToken.getToken(),
           platform: existingToken.getPlatform(),
           isActive: existingToken.getIsActive(),
@@ -79,7 +79,7 @@ export class RegisterDeviceTokenUseCase {
 
     return {
       id: deviceToken.getId(),
-      userId: deviceToken.getUserId().value(),
+      userId: deviceToken.getUserId().value,
       token: deviceToken.getToken(),
       platform: deviceToken.getPlatform(),
       isActive: deviceToken.getIsActive(),
