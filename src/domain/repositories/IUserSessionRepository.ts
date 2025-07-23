@@ -11,4 +11,8 @@ export interface IUserSessionRepository {
   invalidateSession(sessionId: string): Promise<void>;
   deleteExpiredSessions(): Promise<void>;
   countActiveSessions(userId: UserId): Promise<number>;
+  
+  // Nuevos métodos para CRUD
+  countActiveSessionsByUser(userId: UserId): Promise<number>;
+  revokeAllUserSessions(userId: UserId): Promise<number>; // Retorna número de sesiones revocadas
 }

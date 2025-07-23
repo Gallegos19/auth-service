@@ -100,6 +100,35 @@ export class PrismaUserRepository implements IUserRepository {
     return users.map(userRecord => this.toDomain(userRecord));
   }
 
+  async findByRole(role: string, limit?: number, offset?: number, status?: string): Promise<User[]> {
+    const whereClause: any = { role };
+    
+    if (status) {
+      whereClause.account_status = status;
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: whereClause,
+      take: limit,
+      skip: offset,
+      orderBy: { created_at: 'desc' }
+    });
+
+    return users.map(userRecord => this.toDomain(userRecord));
+  }
+
+  async countByRole(role: string, status?: string): Promise<number> {
+    const whereClause: any = { role };
+    
+    if (status) {
+      whereClause.account_status = status;
+    }
+
+    return this.prisma.user.count({
+      where: whereClause
+    });
+  }
+
   private toDomain(record: any): User {
     return new User(
       new UserId(record.id),
@@ -110,7 +139,8 @@ export class PrismaUserRepository implements IUserRepository {
       record.last_name,
       record.is_verified,
       record.account_status,
-      record.created_at
+      record.created_at,
+      record.role
     );
   }
 }

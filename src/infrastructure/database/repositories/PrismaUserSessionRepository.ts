@@ -115,6 +115,30 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
     });
   }
 
+  async countActiveSessionsByUser(userId: UserId): Promise<number> {
+    return this.countActiveSessions(userId); // Reutilizar método existente
+  }
+
+  async revokeAllUserSessions(userId: UserId): Promise<number> {
+    // Contar sesiones activas antes de revocarlas
+    const activeSessionsCount = await this.countActiveSessions(userId);
+    
+    // Revocar todas las sesiones del usuario
+    await this.prisma.userSession.updateMany({
+      where: { 
+        user_id: userId.value,
+        is_active: true
+      },
+      data: { 
+        is_active: false,
+        ended_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+
+    return activeSessionsCount;
+  }
+
   private toDomain(record: any, accessToken?: Token, refreshToken?: Token): UserSession {
     return new UserSession(
       record.id,

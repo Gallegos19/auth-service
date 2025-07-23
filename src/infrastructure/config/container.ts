@@ -5,6 +5,16 @@ import 'reflect-metadata';
 
 // Use Cases
 import { RegisterUserUseCase } from '../../application/use-cases/RegisterUserUseCase';
+import { CreateModeratorUseCase } from '../../application/use-cases/CreateModeratorUseCase';
+import { CreateAdministratorUseCase } from '../../application/use-cases/CreateAdministratorUseCase';
+import { GetModeratorUseCase } from '../../application/use-cases/GetModeratorUseCase';
+import { GetAdministratorUseCase } from '../../application/use-cases/GetAdministratorUseCase';
+import { ListModeratorsUseCase } from '../../application/use-cases/ListModeratorsUseCase';
+import { ListAdministratorsUseCase } from '../../application/use-cases/ListAdministratorsUseCase';
+import { UpdateModeratorUseCase } from '../../application/use-cases/UpdateModeratorUseCase';
+import { UpdateAdministratorUseCase } from '../../application/use-cases/UpdateAdministratorUseCase';
+import { DeactivateModeratorUseCase } from '../../application/use-cases/DeactivateModeratorUseCase';
+import { DeactivateAdministratorUseCase } from '../../application/use-cases/DeactivateAdministratorUseCase';
 import { LoginUserUseCase } from '../../application/use-cases/LoginUserUseCase';
 import { LogoutUserUseCase } from '../../application/use-cases/LogoutUserUseCase';
 import { ValidateTokenUseCase } from '../../application/use-cases/ValidateTokenUseCase';
@@ -29,6 +39,7 @@ import { PrismaPasswordResetRepository } from '../database/repositories/PrismaPa
 
 // Controllers
 import { AuthController } from '../web/controllers/AuthController';
+import { AdminUserController } from '../web/controllers/AdminUserController';
 import { TokenController } from '../web/controllers/TokenController';
 import { ParentalConsentController } from '../web/controllers/ParentalConsentController';
 
@@ -122,6 +133,16 @@ console.log('✅ Repositorios configurados');
 // USE CASES
 // ==================
 container.bind<RegisterUserUseCase>('RegisterUserUseCase').to(RegisterUserUseCase);
+container.bind<CreateModeratorUseCase>('CreateModeratorUseCase').to(CreateModeratorUseCase);
+container.bind<CreateAdministratorUseCase>('CreateAdministratorUseCase').to(CreateAdministratorUseCase);
+container.bind<GetModeratorUseCase>('GetModeratorUseCase').to(GetModeratorUseCase);
+container.bind<GetAdministratorUseCase>('GetAdministratorUseCase').to(GetAdministratorUseCase);
+container.bind<ListModeratorsUseCase>('ListModeratorsUseCase').to(ListModeratorsUseCase);
+container.bind<ListAdministratorsUseCase>('ListAdministratorsUseCase').to(ListAdministratorsUseCase);
+container.bind<UpdateModeratorUseCase>('UpdateModeratorUseCase').to(UpdateModeratorUseCase);
+container.bind<UpdateAdministratorUseCase>('UpdateAdministratorUseCase').to(UpdateAdministratorUseCase);
+container.bind<DeactivateModeratorUseCase>('DeactivateModeratorUseCase').to(DeactivateModeratorUseCase);
+container.bind<DeactivateAdministratorUseCase>('DeactivateAdministratorUseCase').to(DeactivateAdministratorUseCase);
 container.bind<LoginUserUseCase>('LoginUserUseCase').to(LoginUserUseCase);
 container.bind<LogoutUserUseCase>('LogoutUserUseCase').to(LogoutUserUseCase);
 container.bind<ValidateTokenUseCase>('ValidateTokenUseCase').to(ValidateTokenUseCase);
@@ -151,6 +172,7 @@ console.log('✅ Application Services configurados');
 // CONTROLLERS
 // ==================
 container.bind<AuthController>('AuthController').to(AuthController);
+container.bind<AdminUserController>('AdminUserController').to(AdminUserController);
 container.bind<TokenController>('TokenController').to(TokenController);
 container.bind<ParentalConsentController>('ParentalConsentController').to(ParentalConsentController);
 container.bind<EmailVerificationController>('EmailVerificationController').to(EmailVerificationController);

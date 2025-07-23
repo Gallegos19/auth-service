@@ -7,8 +7,10 @@ import { config } from './infrastructure/config/enviroment';
 import { container, cleanup } from './infrastructure/config/container';
 import { connectDatabase } from './infrastructure/config/database';
 import { createAuthRoutes } from './infrastructure/web/routes/authRoutes';
+import { createAdminRoutes } from './infrastructure/web/routes/adminRoutes';
 import { errorHandlerMiddleware } from './infrastructure/web/middleware/errorHandlerMiddleware';
 import { AuthController } from './infrastructure/web/controllers/AuthController';
+import { AdminUserController } from './infrastructure/web/controllers/AdminUserController';
 import { TokenController } from './infrastructure/web/controllers/TokenController';
 import { ParentalConsentController } from './infrastructure/web/controllers/ParentalConsentController';
 import { setupSwagger } from './infrastructure/web/swagger/swagger.config';
@@ -138,6 +140,7 @@ async function bootstrap() {
     // API ROUTES
     // ==================
     const authController = await container.getAsync<AuthController>('AuthController');
+    const adminUserController = await container.getAsync<AdminUserController>('AdminUserController');
     const tokenController = await container.getAsync<TokenController>('TokenController');
     const parentalConsentController = container.get<ParentalConsentController>('ParentalConsentController');
     const emailVerificationController = container.get<EmailVerificationController>('EmailVerificationController');
@@ -148,6 +151,8 @@ async function bootstrap() {
       parentalConsentController,
       emailVerificationController
     ));
+
+    app.use('/api/admin', createAdminRoutes(adminUserController));
 
 
     // Redirect para documentación

@@ -4,7 +4,7 @@ import { UserId } from '../value-objects/UserId';
 import { Age } from '../value-objects/Age';
 import { UserRegisteredEvent } from '../events/UserRegisteredEvent';
 
-export type UserRole = 'user' | 'user_minor';
+export type UserRole = 'user' | 'user_minor' | 'moderator' | 'administrator';
 export type AccountStatus = 'active' | 'suspended' | 'pending_verification' | 'deactivated';
 
 export class User {
@@ -17,7 +17,8 @@ export class User {
     private lastName?: string,
     private isVerified: boolean = false,
     private accountStatus: AccountStatus = 'pending_verification',
-    private readonly createdAt: Date = new Date()
+    private readonly createdAt: Date = new Date(),
+    private role?: UserRole
   ) {}
 
   public static create(
@@ -36,6 +37,50 @@ export class User {
       age.value,
       user.getRole(),
       user.needsParentalConsent(),
+      new Date()
+    );
+
+    return { user, event };
+  }
+
+  public static createModerator(
+    email: Email,
+    password: Password,
+    age: Age,
+    firstName?: string,
+    lastName?: string
+  ): { user: User; event: UserRegisteredEvent } {
+    const userId = UserId.generate();
+    const user = new User(userId, email, password, age, firstName, lastName, true, 'active', new Date(), 'moderator');
+
+    const event = new UserRegisteredEvent(
+      userId.value,
+      email.value,
+      age.value,
+      'moderator',
+      false, // Moderators don't need parental consent
+      new Date()
+    );
+
+    return { user, event };
+  }
+
+  public static createAdministrator(
+    email: Email,
+    password: Password,
+    age: Age,
+    firstName?: string,
+    lastName?: string
+  ): { user: User; event: UserRegisteredEvent } {
+    const userId = UserId.generate();
+    const user = new User(userId, email, password, age, firstName, lastName, true, 'active', new Date(), 'administrator');
+
+    const event = new UserRegisteredEvent(
+      userId.value,
+      email.value,
+      age.value,
+      'administrator',
+      false, // Administrators don't need parental consent
       new Date()
     );
 
@@ -63,6 +108,11 @@ export class User {
   }
 
   public getRole(): UserRole {
+    // If role is explicitly set (moderator/administrator), return it
+    if (this.role) {
+      return this.role;
+    }
+    // Otherwise, determine role based on age
     return this.age.isMinor() ? 'user_minor' : 'user';
   }
 
@@ -80,6 +130,22 @@ export class User {
 
   public updatePassword(newPassword: Password): void {
     this.hashedPassword = newPassword;
+  }
+
+  public updateFirstName(firstName: string): void {
+    this.firstName = firstName;
+  }
+
+  public updateLastName(lastName: string): void {
+    this.lastName = lastName;
+  }
+
+  public deactivate(): void {
+    this.accountStatus = 'deactivated';
+  }
+
+  public setVerificationStatus(isVerified: boolean): void {
+    this.isVerified = isVerified;
   }
 
   // Getters
