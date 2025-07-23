@@ -43,13 +43,10 @@ export class GetUsersByRoleUseCase {
       const offset = (page - 1) * limit;
 
       // Obtener usuarios por rol con paginación
-      const { users, total } = await this.userRepository.findByRoleWithPagination(
-        command.role,
-        limit,
-        offset
-      );
+      const users = await this.userRepository.findByRole(command.role, limit, offset);
+      const total = await this.userRepository.countByRole(command.role);
 
-      const userSummaries: UserSummary[] = users.map(user => ({
+      const userSummaries: UserSummary[] = users.map((user: any) => ({
         userId: user.getId().value,
         email: user.getEmail().value,
         firstName: user.getFirstName(),

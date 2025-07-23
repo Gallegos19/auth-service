@@ -149,7 +149,8 @@ async function bootstrap() {
       authController, 
       tokenController, 
       parentalConsentController,
-      emailVerificationController
+      emailVerificationController,
+      adminUserController
     ));
 
     app.use('/api/admin', createAdminRoutes(adminUserController));
