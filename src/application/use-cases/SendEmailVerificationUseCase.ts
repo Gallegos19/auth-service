@@ -83,7 +83,8 @@ export class VerifyEmailUseCase {
   constructor(
     @inject('IUserRepository') private readonly userRepository: IUserRepository,
     @inject('IEmailVerificationRepository') private readonly emailVerificationRepository: IEmailVerificationRepository,
-    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort
+    @inject('EventPublisherPort') private readonly eventPublisher: EventPublisherPort,
+    @inject('EmailServicePort') private readonly emailService: EmailServicePort
   ) {}
 
   async execute(command: VerifyEmailCommand): Promise<VerifyEmailResponse> {
@@ -118,6 +119,18 @@ export class VerifyEmailUseCase {
       new Date()
     );
     await this.eventPublisher.publish(event);
+
+    // Enviar email de bienvenida después de verificar exitosamente
+    try {
+      await this.emailService.sendWelcomeEmail(
+        user.getEmail().value,
+        user.getFirstName()
+      );
+      console.log('✅ Email de bienvenida enviado exitosamente a:', user.getEmail().value);
+    } catch (emailError) {
+      console.warn('⚠️ Error enviando email de bienvenida (no crítico):', emailError);
+      // No lanzamos el error para no afectar el flujo principal de verificación
+    }
 
     return {
       userId: user.getId().value,

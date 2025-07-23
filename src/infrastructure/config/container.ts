@@ -64,6 +64,7 @@ console.log('🔧 Configurando container de dependencias...');
 
 // External Services
 import { GmailEmailService } from '../external/GmailEmailService';
+import { NotificationEmailService } from '../external/NotificationEmailService';
 import { IEmailVerificationRepository } from '../../domain/repositories/IEmailVerificationRepository';
 import { PrismaEmailVerificationRepository } from '../database/repositories/PrismaEmailVerificationRepository';
 import { ResendEmailVerificationUseCase, SendEmailVerificationUseCase, VerifyEmailUseCase } from '../../application/use-cases/SendEmailVerificationUseCase';
@@ -87,12 +88,16 @@ console.log('✅ PrismaClient configurado');
 container.bind<TokenServicePort>('TokenServicePort').to(JwtTokenService).inSingletonScope();
 container.bind<PasswordServicePort>('PasswordServicePort').to(BcryptPasswordService).inSingletonScope();
 
-// Email Service - Usar Gmail real si las credenciales están configuradas
-if (config.email?.clientId && config.email?.clientSecret && config.email?.refreshToken) {
+// Email Service - Usar NotificationEmailService como servicio principal
+if (process.env.NOTIFICATION_SERVICE_URL && process.env.AUTH_SERVICE_KEY) {
+  container.bind<EmailServicePort>('EmailServicePort').to(NotificationEmailService).inSingletonScope();
+  console.log('✅ NotificationEmailService configurado (usando notification-service)');
+} else if (config.email?.clientId && config.email?.clientSecret && config.email?.refreshToken) {
+  // Fallback a Gmail si notification-service no está configurado
   container.bind<EmailServicePort>('EmailServicePort').to(GmailEmailService).inSingletonScope();
-  console.log('✅ Gmail EmailService configurado');
+  console.log('✅ Gmail EmailService configurado (fallback)');
 } else {
-  // Fallback a mock service para desarrollo
+  // Fallback final a mock service para desarrollo
   const mockEmailService = {
     async sendParentalConsentEmail(parentEmail: string, consentToken: string, minorName: string): Promise<void> {
       console.log(`📧 [MOCK] Email de consentimiento parental a ${parentEmail} para ${minorName}`);
@@ -111,7 +116,7 @@ if (config.email?.clientId && config.email?.clientSecret && config.email?.refres
     }
   };
   container.bind<EmailServicePort>('EmailServicePort').toConstantValue(mockEmailService);
-  console.log('⚠️ Mock EmailService configurado (configura Gmail para emails reales)');
+  console.log('⚠️ Mock EmailService configurado (configura notification-service o Gmail para emails reales)');
 }
 
 container.bind<EventPublisherPort>('EventPublisherPort').to(MockEventPublisher).inSingletonScope();
