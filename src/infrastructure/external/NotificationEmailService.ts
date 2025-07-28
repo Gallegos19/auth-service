@@ -33,7 +33,7 @@ export class NotificationEmailService implements EmailServicePort {
           to: email,
           userName: email.split('@')[0], // Usar parte del email como nombre por defecto
           token: verificationToken,
-          baseUrl: process.env.FRONTEND_URL || 'https://xumaa.com',
+          baseUrl: process.env.FRONTEND_URL || 'https://front-xuma-a.vercel.app',
           expirationHours: 24
         })
       });

@@ -11,7 +11,7 @@ export class RegisterDeviceTokenDto {
   platform!: string;
 
   @IsOptional()
-  @IsString({ message: 'App version must be a string' })
+  @IsString({ message: 'App version must be a string' }) 
   appVersion?: string;
 
   @IsOptional()
@@ -21,4 +21,5 @@ export class RegisterDeviceTokenDto {
   @IsOptional()
   @IsString({ message: 'OS version must be a string' })
   osVersion?: string;
+
 }
